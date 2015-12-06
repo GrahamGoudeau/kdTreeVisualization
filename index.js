@@ -58,36 +58,42 @@ function build_kd_tree(x_start, y_start, x_end, y_end, points) {
     kd_tree_helper(x_start, y_start, x_end, y_end, points, do_horizontal);
 }
 
-function kd_tree_helper(x_start, y_start, x_end, y_end, points, horizontal) {
+function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, horizontal) {
     var points_median,
         points_in_range = [],
-        axis;
+        draw_x_start,
+        draw_y_start,
+        draw_x_end,
+        draw_y_end;
 
     points.map(function (point) {
-        if (point.x > x_start && point.x < x_end &&
-                point.y > y_start && point.y < y_end) {
+        if (point.x > cur_x_start && point.x < cur_x_end &&
+                point.y > cur_y_start && point.y < cur_y_end) {
             points_in_range.push(point);
         }
     });
 
-    if (points_in_range.length > 0) {
-        if (horizontal) {
-            axis = 'y';
-            points_median = median(points_in_range, axis);
-            if (points_in_range.length === 1) return;
-            line(x_start, points_median, x_end, points_median);
-            kd_tree_helper(x_start, y_start, x_end, points_median, points, !horizontal);
-            kd_tree_helper(x_start, points_median, x_end, y_end, points, !horizontal);
-        }
-        else {
-            axis = 'x';
-            points_median = median(points_in_range, axis);
-            if (points_in_range.length === 1) return;
-            line(points_median, y_start, points_median, y_end);
-            kd_tree_helper(x_start, y_start, points_median, y_end, points, !horizontal);
-            kd_tree_helper(points_median, y_start, x_end, y_end, points, !horizontal);
-        }
+    if (points_in_range.length <= 1) {
+        return;
     }
+    points_median = median(points_in_range, horizontal ? 'y' : 'x');
+    if (horizontal) {
+        draw_x_start = cur_x_start;
+        draw_y_start = points_median;
+        draw_x_end = cur_x_end;
+        draw_y_end = points_median;
+        kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, points_median, points, !horizontal);
+        kd_tree_helper(cur_x_start, points_median, cur_x_end, cur_y_end, points, !horizontal);
+    }
+    else {
+        draw_x_start = points_median;
+        draw_y_start = cur_y_start;
+        draw_x_end = points_median;
+        draw_y_end = cur_y_end;
+        kd_tree_helper(cur_x_start, cur_y_start, points_median, cur_y_end, points, !horizontal);
+        kd_tree_helper(points_median, cur_y_start, cur_x_end, cur_y_end, points, !horizontal);
+    }
+    line(draw_x_start, draw_y_start, draw_x_end, draw_y_end);
 }
 
 function drawEllipses(ellipses) {
@@ -97,16 +103,31 @@ function drawEllipses(ellipses) {
 }
 
 function mouseClicked() {
-    var new_point;
+    var new_point,
+        clicked_on_point = null;
     if (mouseX < width && mouseY < height) {
         setup();
-        new_point = {
-            x: mouseX,
-            y: mouseY
+
+        // determine if we clicked on a point
+        point_set.map(function (point) {
+            if (Math.abs(point.x - mouseX) <= point_width &&
+                    Math.abs(point.y - mouseY) <= point_width) {
+                clicked_on_point = point;
+            }
+        });
+
+        if (clicked_on_point !== null) {
+            point_set.splice(point_set.indexOf(clicked_on_point), 1);
         }
-        point_set.push(new_point);
+        else {
+            new_point = {
+                x: mouseX,
+                y: mouseY
+            }
+            point_set.push(new_point);
+        }
+
         drawEllipses(point_set);
-        //build_kd_tree(width / 2, 0, width - 1, height - 1, point_set);
         build_kd_tree(0, 0, width - 1, height - 1, point_set);
     }
 }
