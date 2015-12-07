@@ -35,6 +35,9 @@ function setup() {
     x_end = width - 1,
     y_start = 0,
     y_end = height - 1;
+
+    // reset the message underneath the canvas
+    document.getElementById('message').innerHTML = "";
 }
 
 // x_or_y_val must be either 'x' or 'y'
@@ -133,4 +136,44 @@ function mouseClicked() {
 }
 
 function draw() {
+}
+
+function drawQueryRectangle(upper_left_x, upper_left_y, lower_right_x, lower_right_y) {
+    noFill();
+    stroke(255, 0, 255);
+    rect(upper_left_x, upper_left_y, lower_right_x - upper_left_x, lower_right_y - upper_left_y);
+    fill(0);
+}
+
+function makeQuery(values) {
+    var form = document.getElementById('form'),
+        upper_left_x = parseInt(form.upper_left_x.value),
+        upper_left_y = parseInt(form.upper_left_y.value),
+        lower_right_x = parseInt(form.lower_right_x.value),
+        lower_right_y = parseInt(form.lower_right_y.value),
+        num_matching_query = 0;
+
+    if (isNaN(upper_left_x) || isNaN(upper_left_y) ||
+        isNaN(lower_right_x) || isNaN(lower_right_y)) {
+        document.getElementById('message').innerHTML = "Invalid input";
+        return;
+    }
+
+    if (upper_left_x >= lower_right_x || upper_left_y >= lower_right_y) {
+        document.getElementById('message').innerHTML = "Invalid query dimensions";
+        return;
+    }
+    setup();
+    drawEllipses(point_set);
+    build_kd_tree(0, 0, width - 1, height - 1, point_set);
+    document.getElementById('message').innerHTML = "";
+    drawQueryRectangle(upper_left_x, upper_left_y, lower_right_x, lower_right_y);
+
+    point_set.map(function (point) {
+        if (point.x >= upper_left_x && point.x <= lower_right_x &&
+                point.y >= upper_left_y && point.y <= lower_right_y) {
+            num_matching_query++;
+        }
+    });
+    document.getElementById('message').innerHTML = num_matching_query.toString() + " matching points";
 }

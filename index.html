@@ -6,13 +6,30 @@
         <link rel="stylesheet" href="index.css"/>
     </head>
 <body>
-<h2>Geometry Final Project</h2>
+<h2>Computational Geometry Final Project</h2>
 <p>
-Graham Goudeau
+Graham Goudeau --
 Comp 163
 </p>
 <div id="canvas">
 </div>
 <button type="button" onclick="reset()">Reset values</button>
+<p>Set the query rectangle, with (0,0) being the top left corner of the canvas:</p>
+<p id="message"></p>
+<form id="form">
+    Upper left corner x:<br>
+    <input type="text" class="input" name="upper_left_x">
+    <br>
+    Upper left corner y:<br>
+    <input type="text" class="input" name="upper_left_y">
+    <br><br>
+    Lower right corner x:<br>
+    <input type="text" class="input" name="lower_right_x">
+    <br>
+    Lower right corner y:<br>
+    <input type="text" class="input" name="lower_right_y">
+    <br><br>
+    <input type="button" value="Make Query" onclick="makeQuery(this);">
+</form>
 </body>
 </html>
