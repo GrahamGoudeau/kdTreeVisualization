@@ -295,4 +295,5 @@ function addRandomInput() {
     if (showGraph) {
         drawTree(tree);
     }
+    document.getElementById('count').innerHTML = input.toString() + ' point(s) added';
 }
