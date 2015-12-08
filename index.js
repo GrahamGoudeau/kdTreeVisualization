@@ -43,6 +43,7 @@ function setup() {
 
     // reset the message underneath the canvas
     document.getElementById('message').innerHTML = "";
+    document.getElementById('dimensions').innerHTML = 'Dimensions of the canvas:<br>Width: ' + (width - 1).toString() + ' Height: ' + (height - 1).toString();
 }
 
 // x_or_y_val must be either 'x' or 'y'
@@ -261,7 +262,13 @@ function makeQuery(values) {
     }
     setup();
     drawEllipses(point_set);
-    build_kd_tree(0, 0, width - 1, height - 1, point_set);
+    var tree = {
+        first: true
+    };
+    build_kd_tree(0, 0, width - 1, height - 1, point_set, tree);
+    if (showGraph) {
+        drawTree(tree);
+    }
     document.getElementById('message').innerHTML = "";
     drawQueryRectangle(upper_left_x, upper_left_y, lower_right_x, lower_right_y);
 
