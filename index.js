@@ -270,3 +270,29 @@ function makeQuery(values) {
     });
     document.getElementById('message').innerHTML = num_matching_query.toString() + " matching points";
 }
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function addRandomInput() {
+    var input = parseInt(document.getElementById('random_input').value);
+
+    if (isNaN(input)) return;
+
+    reset(true);
+    for (var i = 0; i < input; i++) {
+        point_set.push({
+            x: getRandomInt(0, width - 1),
+            y: getRandomInt(0, height - 1)
+        });
+    }
+    drawEllipses(point_set);
+    var tree = {
+        first: true
+    };
+    build_kd_tree(0, 0, width - 1, height - 1, point_set, tree);
+    if (showGraph) {
+        drawTree(tree);
+    }
+}
