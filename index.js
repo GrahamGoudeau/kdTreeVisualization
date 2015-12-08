@@ -117,6 +117,7 @@ function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, 
 
 function drawTree(tree) {
     if (tree.point) {
+        // draw the "root" of the tree red
         if (tree.first) {
             fill(255, 0, 0);
             stroke(255, 0, 0);
@@ -126,6 +127,8 @@ function drawTree(tree) {
             stroke(0, 255, 0);
         }
         ellipse(tree.point.x, tree.point.y, point_width, point_width);
+
+        // draw connections to each of its children
         if (tree.left) {
             if (tree.left.point && tree.left.point.x && tree.left.point.y) {
                 stroke(0, 255, 0);

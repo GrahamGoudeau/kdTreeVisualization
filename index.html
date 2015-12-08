@@ -6,11 +6,11 @@
         <link rel="stylesheet" href="index.css"/>
     </head>
 <body>
-<h2>Computational Geometry Final Project</h2>
-<p>
-Graham Goudeau --
-Comp 163
-</p>
+<h1>Computational Geometry (COMP 163) Final Project</h1>
+<h2>k-d Tree Visualization</h2>
+<h4>
+Graham Goudeau
+</h4>
 <p>
 Click on the canvas below to add points. Click an existing point to remove it.<br>
 With each subsequent point, the kd-tree is recalculated.<br>
@@ -26,9 +26,10 @@ Add the first two points.  An explanation of the process will appear here...
 <button type="button" onclick="toggleGraph()">Toggle graph</button>
 <button type="button" onclick="addRandomInput()">Add random values:</button>
 <label for="random_input"> Number of random values: <input type="text" id="random_input" class="input"/></label>
-<p>Set the query rectangle, with (0,0) being the top left corner of the canvas:</p>
+<p>Set the query rectangle, with (0,0) being the top left corner of the canvas (positive x to the right, positive y down):</p>
 <p id="message"></p>
 <form id="form">
+    <p>(values are in pixels)</p>
     Upper left corner x:<br>
     <input type="text" class="input" name="upper_left_x">
     <br>
