@@ -4,17 +4,21 @@ var point_set = [],
     x_start,
     x_end,
     y_start,
-    y_end;
+    y_end,
+    showGraph = false;
 
-function reset() {
-    point_set = [];
+function reset(resetValues) {
     do_horizontal = true;
     x_start = 0,
     x_end = width - 1,
     y_start = 0,
     y_end = height - 1;
     setup();
-    document.getElementById('explanation').innerHTML = 'Start adding points again!';
+    if (resetValues) {
+        document.getElementById('explanation').innerHTML = 'Start adding points again!';
+        document.getElementById('count').innerHTML = '0 point(s) added';
+        point_set = [];
+    }
 }
 
 function setup() {
@@ -58,11 +62,11 @@ function median(values, x_or_y_val) {
         return (values[half-1][x_or_y_val] + values[half][x_or_y_val]) / 2.0;
 }
 
-function build_kd_tree(x_start, y_start, x_end, y_end, points) {
-    kd_tree_helper(x_start, y_start, x_end, y_end, points, do_horizontal);
+function build_kd_tree(x_start, y_start, x_end, y_end, points, tree) {
+    kd_tree_helper(x_start, y_start, x_end, y_end, points, do_horizontal, tree);
 }
 
-function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, horizontal) {
+function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, horizontal, tree) {
     var points_median,
         points_in_range = [],
         draw_x_start,
@@ -82,6 +86,10 @@ function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, 
     }
     points_median = median(points_in_range, horizontal ? 'y' : 'x');
 
+    // initialize left and right subtrees
+    tree.left = {};
+    tree.right = {};
+
     // recurse on the median and the appropriate endpoints,
     // flipping whether or not we are searching horizontally
     if (horizontal) {
@@ -89,18 +97,54 @@ function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, 
         draw_y_start = points_median;
         draw_x_end = cur_x_end;
         draw_y_end = points_median;
-        kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, points_median, points, !horizontal);
-        kd_tree_helper(cur_x_start, points_median, cur_x_end, cur_y_end, points, !horizontal);
+        kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, points_median, points, !horizontal, tree.left);
+        kd_tree_helper(cur_x_start, points_median, cur_x_end, cur_y_end, points, !horizontal, tree.right);
     }
     else {
         draw_x_start = points_median;
         draw_y_start = cur_y_start;
         draw_x_end = points_median;
         draw_y_end = cur_y_end;
-        kd_tree_helper(cur_x_start, cur_y_start, points_median, cur_y_end, points, !horizontal);
-        kd_tree_helper(points_median, cur_y_start, cur_x_end, cur_y_end, points, !horizontal);
+        kd_tree_helper(cur_x_start, cur_y_start, points_median, cur_y_end, points, !horizontal, tree.left);
+        kd_tree_helper(points_median, cur_y_start, cur_x_end, cur_y_end, points, !horizontal, tree.right);
     }
     line(draw_x_start, draw_y_start, draw_x_end, draw_y_end);
+    tree.point = {
+        x: (draw_x_start + draw_x_end) / 2,
+        y: (draw_y_start + draw_y_end) / 2
+    }
+}
+
+function drawTree(tree) {
+    if (tree.point) {
+        if (tree.first) {
+            fill(255, 0, 0);
+            stroke(255, 0, 0);
+        }
+        else {
+            fill(0, 255, 0);
+            stroke(0, 255, 0);
+        }
+        ellipse(tree.point.x, tree.point.y, point_width, point_width);
+        if (tree.left) {
+            if (tree.left.point && tree.left.point.x && tree.left.point.y) {
+                stroke(0, 255, 0);
+                fill(0, 255, 0);
+                line(tree.point.x, tree.point.y, tree.left.point.x, tree.left.point.y);
+            }
+            drawTree(tree.left);
+        }
+        if (tree.right) {
+            if (tree.right.point && tree.right.point.x && tree.right.point.y) {
+                stroke(0, 255, 0);
+                fill(0, 255, 0);
+                line(tree.point.x, tree.point.y, tree.right.point.x, tree.right.point.y);
+            }
+            drawTree(tree.right);
+        }
+    }
+    stroke(0);
+    fill(0);
 }
 
 function drawEllipses(ellipses) {
@@ -109,10 +153,28 @@ function drawEllipses(ellipses) {
     });
 }
 
+function toggleGraph() {
+    showGraph = !showGraph;
+    reset(false);
+    if (showGraph) {
+        var tree = {
+            first: true
+        };
+        drawEllipses(point_set);
+        build_kd_tree(0, 0, width - 1, height - 1, point_set, tree);
+        drawTree(tree);
+    }
+    else {
+        drawEllipses(point_set);
+        build_kd_tree(0, 0, width - 1, height - 1, point_set, {});
+    }
+}
+
 function mouseClicked() {
     var new_point,
         clicked_on_point = null;
-    if (mouseX < width && mouseY < height) {
+
+    if (mouseX < width && mouseX >= 0 && mouseY < height && mouseY >= 0) {
         setup();
 
         // determine if we clicked on a point
@@ -134,7 +196,7 @@ function mouseClicked() {
             point_set.push(new_point);
         }
         if (point_set.length === 0) {
-            document.getElementById('count').innerHTML = '';
+            document.getElementById('count').innerHTML = '<br>';
         }
         else {
             document.getElementById('count').innerHTML = point_set.length.toString() + ' point(s) added';
@@ -152,11 +214,17 @@ function mouseClicked() {
             document.getElementById('explanation').innerHTML = 'We now must horizontally divide the vertical divisions we made last time.';
         }
         if (point_set.length === 16) {
-            document.getElementById('explanation').innerHTML = 'We repeat this process of dividing the plane (or sub-plane) in half each time, leaving at most one point in each rectangle.';
+            document.getElementById('explanation').innerHTML = 'We repeat this process of dividing the plane (or sub-plane) at its median each time, leaving at most one point in each rectangle.';
         }
 
         drawEllipses(point_set);
-        build_kd_tree(0, 0, width - 1, height - 1, point_set);
+        tree = {
+            first: true
+        };
+        build_kd_tree(0, 0, width - 1, height - 1, point_set, tree);
+        if (showGraph) {
+            drawTree(tree);
+        }
     }
 }
 
