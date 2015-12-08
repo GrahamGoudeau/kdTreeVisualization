@@ -14,6 +14,7 @@ function reset() {
     y_start = 0,
     y_end = height - 1;
     setup();
+    document.getElementById('explanation').innerHTML = 'Start adding points again!';
 }
 
 function setup() {
@@ -80,6 +81,9 @@ function kd_tree_helper(cur_x_start, cur_y_start, cur_x_end, cur_y_end, points, 
         return;
     }
     points_median = median(points_in_range, horizontal ? 'y' : 'x');
+
+    // recurse on the median and the appropriate endpoints,
+    // flipping whether or not we are searching horizontally
     if (horizontal) {
         draw_x_start = cur_x_start;
         draw_y_start = points_median;
@@ -128,6 +132,27 @@ function mouseClicked() {
                 y: mouseY
             }
             point_set.push(new_point);
+        }
+        if (point_set.length === 0) {
+            document.getElementById('count').innerHTML = '';
+        }
+        else {
+            document.getElementById('count').innerHTML = point_set.length.toString() + ' point(s) added';
+        }
+        if (point_set.length === 2) {
+            document.getElementById('explanation').innerHTML = 'We begin by drawing a line through the horizontal median of the existing points...';
+        }
+        if (point_set.length === 3) {
+            document.getElementById('explanation').innerHTML = 'Add more points!';
+        }
+        if (point_set.length === 4) {
+            document.getElementById('explanation').innerHTML = 'Now we draw lines through the vertical median of each half of the canvas.';
+        }
+        if (point_set.length === 8) {
+            document.getElementById('explanation').innerHTML = 'We now must horizontally divide the vertical divisions we made last time.';
+        }
+        if (point_set.length === 16) {
+            document.getElementById('explanation').innerHTML = 'We repeat this process of dividing the plane (or sub-plane) in half each time, leaving at most one point in each rectangle.';
         }
 
         drawEllipses(point_set);
